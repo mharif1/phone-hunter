@@ -1,15 +1,14 @@
-const loadPhones = async(searchText) => {
+const loadPhones = async(searchText, dataLimit) => {
     const url = `https://openapi.programming-hero.com/api/phones?search=${searchText}`
     const res = await fetch(url)
     const data = await res.json()
-    displayPhones(data.data)
+    displayPhones(data.data, dataLimit)
 }
-
-const displayPhones = phones => {
+const displayPhones = (phones, dataLimit) => {
     const phonesContainer = document.getElementById('phones-container')
     phonesContainer.textContent = '';
     const showAll = document.getElementById('show-all')
-    if(phones.length > 10){
+    if(dataLimit && phones.length > 10){
         phones = phones.slice(0,10)
         showAll.classList.remove('d-none')
     }
@@ -33,6 +32,7 @@ const displayPhones = phones => {
                         <h5 class="card-title">${phone.phone_name}</h5>
                         <p class="card-text">This is a longer card with supporting text below as a natural lead-in
                             to additional content. This content is a little bit longer.</p>
+                            <button onclick="loadPhoneDetails('${phone.slug}')" class="btn btn-primary mt-3">Show details</button>
                     </div>
                 </div>
         `
@@ -41,11 +41,22 @@ const displayPhones = phones => {
     toggleSpiner(false)
 }
 
-document.getElementById('btn-search').addEventListener('click',function(){
+const processSearch = (dataLimit) => {
     toggleSpiner(true)
     const searchField = document.getElementById('search-field')
     const searchText = searchField.value;
-    loadPhones(searchText)
+    loadPhones(searchText, dataLimit)
+}
+
+document.getElementById('btn-search').addEventListener('click',function(){
+    processSearch(10)
+})
+
+document.getElementById('search-field').addEventListener('keydown', function(e){
+    console.log(e.key)
+    if(e.key === 'Enter'){
+        processSearch(10)
+    }
 })
 
 const toggleSpiner = isLoading => {
@@ -57,4 +68,16 @@ const toggleSpiner = isLoading => {
         loaderSection.classList.add('d-none')
     }
 }
+
+document.getElementById('btn-show-all').addEventListener('click', function(){
+    processSearch()
+})
+
+const loadPhoneDetails= async id =>{
+    const url = `https://openapi.programming-hero.com/api/phone/${id}`;
+    const res = await fetch(url)
+    const data = await res.json()
+    console.log(data)
+}
+
 // loadPhones()
